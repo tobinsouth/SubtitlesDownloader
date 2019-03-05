@@ -9,7 +9,7 @@ setup(
     description='Uses IMDB and OpenSubtitles to download and process subtitles.',
     long_description=open('README.txt').read(),
     install_requires=[
-        "Django >= 1.1.1",
-        "caldav == 0.1.4",
+        "imdb >= 6.6",
+        "pythonopensubtitles",
     ],
 )
