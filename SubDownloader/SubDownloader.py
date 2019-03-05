@@ -98,6 +98,11 @@ the SRT files and save them"""
         self.used_accounts = []
         
         
+    def rate_limit_naught_fix(self):
+        """
+        Avoids the rate limit by logining in with a different account.
+        """
+        self.login()
         
     def remove_usr(self, username):
         """
@@ -230,8 +235,82 @@ the SRT files and save them"""
         
         
         
+    def download_opensubtitles(self, imdb_ids, save = False, new_save_name = None):
+        """
+        Takes some IMDB ID's and downloads the first english subtitle 
+        search results as SRT files.
+        
+        Ideally this function takes all the episode ID's. This allows 
+        the program to collect the subtitles 
+        in bunches to avoid hitting rate limits. Each call can make 
+        20 requests for subtitles in one.
+        """
+        
+        id_subtitles = []
+        id_refrence = {}
+        
+        # Get the subtitles of all of the episodes in the imdb_ids list
+        for imdb_id in imdb_ids:
+            databased_search = self.ost.search_subtitles([{'imdbid':imdb_id, 'sublanguageid': 'eng'}])
+            id_subtitle = databased_search[0].get('IDSubtitleFile')
+            id_subtitles+= [id_subtitle]
+            id_refrence[id_subtitle] = imdb_id
+        
+        all_subtitles = {}
+        
+        # We will group ID into batches of 18 to make the call.
         
         
+        batchs = []
+        mini_list = []
+        for an_id in id_subtitles:
+            if len(mini_list)<19:
+                mini_list+=[an_id]
+            else:
+                batchs+=[mini_list]
+                mini_list = []
+        if len(mini_list)>0:
+            batchs+=[mini_list]
+                
+        for mini_list in batchs:
+                srt_dict = self.ost.download_subtitles(mini_list, return_decoded_data=True)
+
+                # Check that the download worked
+                if srt_dict is None:
+                    print("OpenSubtitles returned nothing, possibly due to rate limit",
+                          "Attempting to login via a new user")
+                    
+                    self.rate_limit_naught_fix()
+                    
+                    srt_dict = self.ost.download_subtitles(mini_list, return_decoded_data=True)
+                    
+                    if srt_dict is None:
+                        print("Unable to download the episodes: ",mini_list)
+                    else:
+                        for id_ in mini_list:           
+                            all_subtitles[id_]= srt_dict[id_]
+                
+                # Otherwise carry on
+                else:
+                    for id_ in mini_list:           
+                        all_subtitles[id_]= srt_dict[id_]
+                
+                print("Downloaded SRT for all", mini_list)
+                
+            
+        # Match the resulted subtitle id to imdb ids for returning
+        returnable_dict = {}
+        for sub_id, subtitles in all_subtitles.items():
+            returnable_dict[id_refrence[sub_id]] = subtitles
+            
+        if not save:
+            for imdb_id, subtitle in returnable_dict.items():
+                with open(self.data_path+imdb_id+".srt", "w+") as f:
+                    f.write(subtitle)
+            print("Saved all to file")
+            
+        return returnable_dict
+            
         
         
         
