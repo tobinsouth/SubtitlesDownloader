@@ -1,6 +1,6 @@
 from imdb import IMDb, IMDbError
 from pythonopensubtitles.opensubtitles import OpenSubtitles
-
+import os
 
 
 
@@ -24,7 +24,8 @@ the SRT files and save them"""
         self.search_term = search_term
         self.save_name = save_name
         
-
+        self.current_account = None
+        
 
     def add_login(self, username, password):
         """
@@ -57,13 +58,17 @@ the SRT files and save them"""
             if token is None:
                 raise Exception("Failed to collect token from manual pass")
             else:  
+                # Save current account 
+                self.current_account = username
                 # Add account to list of accounts
                 if (username, password) not in self.password_array:
                     self.password_array.append((username, password))
                 
                 # Add to list of used accounts
                 if username not in self.used_accounts:
-                        self.used_users.append(username)
+                        self.used_accounts.append(username)
+                        
+                return token
                         
         # Automatically login using a user that has not be used before.
         if len(self.password_array) == 0:
@@ -77,8 +82,10 @@ the SRT files and save them"""
                     if token is None:
                         raise Exception("Failed to login using a previously unused account")
                     else:
-                        self.used_users.append(usr)
-                        return True
+                        # Save current account 
+                        self.current_account = usr
+                        self.used_accounts.append(usr)
+                        return token
             print("Reached end of loop through accounts.",
                   "This suggests all accounts have been used.",
                   "Try running rate_limit_clean to address issue.",
@@ -86,9 +93,14 @@ the SRT files and save them"""
             
         usr, pwd = self.password_array[0]
         token = self.ost.login(usr, pwd)
+        # Save current account 
+        self.current_account = usr
+        self.used_accounts.append(usr)
         return token
         
-        
+    def get_current_login(self):
+        """ Returns current login username """
+        return self.current_account
     
     def rate_limit_clean(self):
         """
@@ -144,10 +156,10 @@ the SRT files and save them"""
                 return 
             
     
-    def find_series(self, search_term = None, force_series = False):    
+    def find(self, search_term = None, force_series = False):    
         """
         Searchs IMDB for media that matches the seach term. 
-        Movies will return an ID.
+        Movies will return a list with the IMDB ID.
         TV Series will return the ID of the series but will update metadata 
         to include all episode ID's
         
@@ -180,15 +192,15 @@ the SRT files and save them"""
             
             if result.data['kind'] == "movie" and not force_series:
                 print("Found a movie called", result['title'],
-                      "If this not correct, try a different search term",
-                      "If you were looking for a series try ",
+                      "\n If this not correct, try a different search term.",
+                      "\n If you were looking for a series try ",
                       "force_series = True")
                 return result
             
             if result.data['kind'] == 'tv series':  # Check if episode, movie, or series
                 
                 print("The series found was "+result['title'],
-                     " If this is not the correct series then try using a different search term.")
+                     "\n If this is not the correct series then try using a different search term.")
                 
                 # Update to get the episodes
                 try:
@@ -204,33 +216,7 @@ the SRT files and save them"""
         raise Exception('Could not find any shows that matched the parameters.')
                 
             
-            
-            
-    def get_all_episodes(self, series):
-        """
-        Creates a list of epsiode information. 
-        
-        Requires a series object from IMDB with episodes already updated within it.
-        
-        Returns a list containing a dictionary for each episode.
-        Dictionary has the following keys:
-            - "season": season number
-            - "episode": episode number 
-            - "imdb_id": movieID from IMDB, used for further scraping 
-            - "title": episode title, 
-            - "air_date": original air date
-        """
-        
-        all_episodes = []
-    
-        for season, episodes in series['episodes'].items():
-            for episode, movie_obj in episodes.items():
-                epsiode_data = {"season":season, "episode": episode, "imdb_id":movie_obj.movieID, 
-                                'title':movie_obj.data['title'], "air_date": movie_obj.data['original air date']}
-                all_episodes.append(epsiode_data)
-                
-        print("Returning", len(all_episodes), " epsiodes.")
-        return all_episodes
+
         
         
         
@@ -250,17 +236,22 @@ the SRT files and save them"""
         id_refrence = {}
         
         # Get the subtitles of all of the episodes in the imdb_ids list
+        print("Search for subtitles of all episodes.")
         for imdb_id in imdb_ids:
             databased_search = self.ost.search_subtitles([{'imdbid':imdb_id, 'sublanguageid': 'eng'}])
-            id_subtitle = databased_search[0].get('IDSubtitleFile')
-            id_subtitles+= [id_subtitle]
-            id_refrence[id_subtitle] = imdb_id
+            try:
+                id_subtitle = databased_search[0].get('IDSubtitleFile')
+                id_subtitles+= [id_subtitle]
+                id_refrence[id_subtitle] = imdb_id
+            except IndexError as ie:
+                print("Couldn't find any search results for this episode, ",
+                      imdb_id, " ~ Will not be downloaded.")
         
         all_subtitles = {}
         
         # We will group ID into batches of 18 to make the call.
         
-        
+        print("Starting subtitle downloads.")
         batchs = []
         mini_list = []
         for an_id in id_subtitles:
@@ -297,20 +288,27 @@ the SRT files and save them"""
                 
                 print("Downloaded SRT for all", mini_list)
                 
-            
+        
+        print("Finished Downloading")
         # Match the resulted subtitle id to imdb ids for returning
         returnable_dict = {}
         for sub_id, subtitles in all_subtitles.items():
             returnable_dict[id_refrence[sub_id]] = subtitles
             
-        if not save:
-            for imdb_id, subtitle in returnable_dict.items():
-                with open(self.data_path+imdb_id+".srt", "w+") as f:
-                    f.write(subtitle)
-            print("Saved all to file")
+        if save:
+            print("Saving Files")
+            try:
+                if not os.path.exists(self.data_path):
+                    os.makedirs(self.data_path)
+                for imdb_id, subtitle in returnable_dict.items():
+                    with open(self.data_path+imdb_id+".srt", "w+") as f:
+                        f.write(subtitle)
+                print("Saved all to file")
+            except:
+                print("Somethign went wrong during saving")
             
         return returnable_dict
-            
+
         
         
         
