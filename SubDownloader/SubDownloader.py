@@ -5,11 +5,12 @@ import os
 
 
 class SubDownloader(object):
-    """ take the name of any TV show or movie, download 
-the SRT files and save them"""
+    """ 
+    take the name of any TV show or movie, download 
+    the SRT files and save them
+    """
 
-
-    def __init__(self, search_term = None, save_name = None, data_path = "."):
+    def __init__(self, search_term = None, data_path = "."):
         """
         Initialize the SubDownloader object
             
@@ -22,7 +23,6 @@ the SRT files and save them"""
         self.data_path = data_path
         
         self.search_term = search_term
-        self.save_name = save_name
         
         self.current_account = None
         
@@ -137,23 +137,7 @@ the SRT files and save them"""
     def set_search_term(self, term):
         """ Sets the search term that will be used to find subtitles"""
         self.search_term = term
-        
-        
-    def set_save_name(self, name= None):
-        """
-        Sets the save name for the files if given,
-        otherwise, sets save to the search term without spaces.
-        """
-        if name is not None:
-            self.save_name = name
-            return
-        else:
-            if self.save_name is not None:
-                return
-            else:
-                self.save_name = self.search_term.replace(" ","")  
-                # Potential bug if .replace bcomes an in place operation
-                return 
+    
             
     
     def find(self, search_term = None, force_series = False):    
@@ -221,7 +205,7 @@ the SRT files and save them"""
         
         
         
-    def download_opensubtitles(self, imdb_ids, save = False, new_save_name = None):
+    def download_opensubtitles(self, imdb_ids, save = False, new_data_path = None):
         """
         Takes some IMDB ID's and downloads the first english subtitle 
         search results as SRT files.
@@ -243,7 +227,7 @@ the SRT files and save them"""
                 id_subtitle = databased_search[0].get('IDSubtitleFile')
                 id_subtitles+= [id_subtitle]
                 id_refrence[id_subtitle] = imdb_id
-            except IndexError as ie:
+            except IndexError:
                 print("Couldn't find any search results for this episode, ",
                       imdb_id, " ~ Will not be downloaded.")
         
@@ -297,6 +281,8 @@ the SRT files and save them"""
             
         if save:
             print("Saving Files")
+            if new_data_path is not None:
+                self.data_path = new_data_path
             try:
                 if not os.path.exists(self.data_path):
                     os.makedirs(self.data_path)
