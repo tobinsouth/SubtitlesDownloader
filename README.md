@@ -1,6 +1,6 @@
-===========
-Subtitle Downloader
-===========
+
+# Subtitle Downloader
+
 
 Subtitle Downloader provides utilties to download subtitles of movies and 
 tv shows. You might find it most useful for analysis of tv show or movie text
@@ -24,8 +24,8 @@ corpuses. Typical usage often looks like this::
     movie_srt= movie_srt_dict[movie_id]
 
 
-Dependencies 
-=========
+## Dependencies 
+
 
 Subtitle Downloader has two main dependencies:
 
