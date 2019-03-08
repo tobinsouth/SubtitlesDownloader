@@ -3,11 +3,11 @@ from distutils.core import setup
 
 setup(
     name='SubtitleDownloader',
-    version='0.1dev',
-    packages=['src',],
+    version='0.2dev',
+    packages=['SubDownloader',],
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
     description='Uses IMDB and OpenSubtitles to download and process subtitles.',
-    long_description=open('README.txt').read(),
+    long_description=open('README.md').read(),
     install_requires=[
         "imdb >= 6.6",
         "pythonopensubtitles",
