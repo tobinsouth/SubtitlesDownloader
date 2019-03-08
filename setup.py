@@ -10,6 +10,6 @@ setup(
     long_description=open('README.md').read(),
     install_requires=[
         "imdbpy >= 6.6",
-        "pythonopensubtitles",
+        "python-opensubtitles",
     ],
 )
