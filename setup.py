@@ -11,5 +11,7 @@ setup(
     install_requires=[
         "imdbpy >= 6.6",
         "python-opensubtitles",
+        "re",
+        "nltk",
     ],
 )
