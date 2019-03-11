@@ -12,7 +12,7 @@ corpuses. Typical usage often looks like this::
     from SubDownloader import SubDownloader
     import SubDownloader.utils as utl
     
-    sd = SubDownloader(search_term = "Iron Man", data_path = "./Data/IM") 
+    sd = SubDownloader.SubDownloader(search_term = "Iron Man", data_path = "./Data/IM") 
     
     sd.login('username', 'password')
     
@@ -43,4 +43,11 @@ Subtitle Downloader has two main dependencies:
 ```
 ```
     pip install -e git+https://github.com/agonzalezro/python-opensubtitles#egg=python-opensubtitles
+```
+
+
+## Installation
+
+```
+pip install -e git+https://github.com/tmsouth/SubtitlesDownloader#egg=SubtitlesDownloader
 ```
