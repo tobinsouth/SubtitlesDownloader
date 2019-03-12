@@ -1,4 +1,4 @@
-from SubDownloader.SubDownloader import SubDownloader
+from SubDownloader import SubDownloader
 # The SubDownloader object does most of the heavy lifting
 import SubDownloader.utils as utl
 # The utils contains helpful functions to do work
@@ -47,13 +47,13 @@ sd.set_search_term("Game of Thrones")
 
 series= sd.find(force_series = True)
 
-meta_data = utl.get_episode_metas(series_object)
+meta_data = utl.get_episode_metas(series)
 
 episode_ids = utl.get_epsiode_ids(meta_data)
 
 data_srt = utl.load_from_file(episode_ids, data_path = "./Data/GoT/")
 
-data = utl.add_srt_to_meta(all_episodes_meta_data, data_srt)
+data = utl.add_srt_to_meta(episode_ids, data_srt)
 
 
 
