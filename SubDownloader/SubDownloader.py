@@ -110,7 +110,7 @@ class SubDownloader(object):
         self.used_accounts = []
         
         
-    def rate_limit_naught_fix(self):
+    def rate_limit_naughty_fix(self):
         """
         Avoids the rate limit by logining in with a different account.
         """
@@ -125,7 +125,6 @@ class SubDownloader(object):
             if tup[0] == username:
                 del self.password_array[i]
 
-    
     
     def set_data_path(self, path):
         """
@@ -255,7 +254,7 @@ class SubDownloader(object):
                     print("OpenSubtitles returned nothing, possibly due to rate limit",
                           "Attempting to login via a new user")
                     
-                    self.rate_limit_naught_fix()
+                    self.rate_limit_naughty_fix()
                     
                     srt_dict = self.ost.download_subtitles(mini_list, return_decoded_data=True)
                     
