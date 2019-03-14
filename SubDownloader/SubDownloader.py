@@ -10,7 +10,7 @@ class SubDownloader(object):
     the SRT files and save them
     """
 
-    def __init__(self, search_term = None, data_path = "."):
+    def __init__(self, search_term = None, data_path = ".", verbose = 2):
         """
         Initialize the SubDownloader object
             
@@ -21,6 +21,7 @@ class SubDownloader(object):
         self.password_array = []
         self.used_accounts = []
         self.data_path = data_path
+        self.verbose = verbose
         
         self.search_term = search_term
         
@@ -37,7 +38,7 @@ class SubDownloader(object):
         """
         
         if (username, password) in self.password_array:
-            print("User already added")
+            self.ObjPrint("User already added", important = True)
             return -1
         else:
             self.password_array.append((username, password))
@@ -86,10 +87,10 @@ class SubDownloader(object):
                         self.current_account = usr
                         self.used_accounts.append(usr)
                         return token
-            print("Reached end of loop through accounts.",
+            self.ObjPrint(["Reached end of loop through accounts.",
                   "This suggests all accounts have been used.",
                   "Try running rate_limit_clean to address issue.",
-                  "Meanwhile, first user has been used.")
+                  "Meanwhile, first user has been used."], important = True)
             
         usr, pwd = self.password_array[0]
         token = self.ost.login(usr, pwd)
@@ -174,16 +175,16 @@ class SubDownloader(object):
             result = search_results[i]
             
             if result.data['kind'] == "movie" and not force_series:
-                print("Found a movie called", result['title'],
+                self.ObjPrint(["Found a movie called", result['title'],
                       "\n If this not correct, try a different search term.",
                       "\n If you were looking for a series try ",
-                      "force_series = True")
+                      "force_series = True"])
                 return result
             
             if result.data['kind'] == 'tv series':  # Check if episode, movie, or series
                 
-                print("The series found was "+result['title'],
-                     "\n If this is not the correct series then try using a different search term.")
+                self.ObjPrint(["The series found was "+result['title'],
+                     "\n If this is not the correct series then try using a different search term."])
                 
                 # Update to get the episodes
                 try:
@@ -219,7 +220,7 @@ class SubDownloader(object):
         id_refrence = {}
         
         # Get the subtitles of all of the episodes in the imdb_ids list
-        print("Search for subtitles of all episodes.")
+        self.ObjPrint("Search for subtitles of all episodes.")
         for imdb_id in imdb_ids:
             databased_search = self.ost.search_subtitles([{'imdbid':imdb_id, 'sublanguageid': 'eng'}])
             try:
@@ -234,7 +235,7 @@ class SubDownloader(object):
         
         # We will group ID into batches of 18 to make the call.
         
-        print("Starting subtitle downloads.")
+        self.ObjPrint("Starting subtitle downloads.")
         batchs = []
         mini_list = []
         for an_id in id_subtitles:
@@ -269,17 +270,17 @@ class SubDownloader(object):
                     for id_ in mini_list:           
                         all_subtitles[id_]= srt_dict[id_]
                 
-                print("Downloaded SRT for all", mini_list)
+                self.ObjPrint(["Downloaded SRT for all", mini_list])
                 
         
-        print("Finished Downloading")
+        self.ObjPrint("Finished Downloading")
         # Match the resulted subtitle id to imdb ids for returning
         returnable_dict = {}
         for sub_id, subtitles in all_subtitles.items():
             returnable_dict[id_refrence[sub_id]] = subtitles
             
         if save:
-            print("Saving Files")
+            self.ObjPrint("Saving Files")
             if new_data_path is not None:
                 self.data_path = new_data_path
             try:
@@ -288,11 +289,21 @@ class SubDownloader(object):
                 for imdb_id, subtitle in returnable_dict.items():
                     with open(self.data_path+imdb_id+".srt", "w+") as f:
                         f.write(subtitle)
-                print("Saved all to file")
+                self.ObjPrint("Saved all to file")
             except:
-                print("Somethign went wrong during saving")
+                self.ObjPrint("Somethign went wrong during saving")
             
         return returnable_dict
+    
+    def ObjPrint(self, obj, important = False):
+        if self.verbose > 2:
+            print(obj)
+        elif self.verbose == 1:
+            if important == True:
+                print(obj)
+        
+                
+        
 
         
         
