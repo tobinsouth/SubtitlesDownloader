@@ -4,7 +4,7 @@
 from nltk.tokenize import RegexpTokenizer
 import re
 
-def process_srt(srt):
+def process_srt(srt, verbose = 0):
     """
     Takes an SRT file as string input. Returns a single list of words.
     All punctuation, formatting tags and capitalisation is removed.
@@ -45,8 +45,8 @@ def process_srt(srt):
             line+=1
         else:
             break 
-
-    print("Done on line " + str(line) + " of " + str(N_lines))
+    if verbose == 1:
+        print("Done on line " + str(line) + " of " + str(N_lines))
     
     return wordbag
 
@@ -132,6 +132,34 @@ def add_srt_to_meta(meta_list, srt_dict):
             new_dict['srt'] = srt_dict[imdb_id]
             new_list.append(new_dict)
     return new_list
+    
+    
+def compress_by_token_ratio(list_of_string):
+    """
+    Takes a string that has been tokenized and finds the ratio of the 
+    compressed data to the uncompressed data.
+    
+    :param list_of_string A list of ordered string objects to be compressed.
+    """
+    
+    vocab_set = set(list_of_string)
+    code_set = set(list(range(1,len(vocab_set)+1)))
+    
+    # Transforming to integer code 
+    
+    ref = dict(zip(vocab_set, list(range(1,len(vocab_set)+1))))
+    
+    coded_list = [ref[tok] for tok in list_of_string]
+    
+    # Join coded list into single string
+    single_string = str(coded_list).encode("utf-8")
+    
+    # Use zlib to compress
+    encoded_string = zlib.compress(single_string)
+    
+    ratio = len(encoded_string) / len(single_string)
+    
+    return ratio
     
     
     
