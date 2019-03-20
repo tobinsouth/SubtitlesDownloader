@@ -3,6 +3,7 @@
 #import nltk, re, #pickle #string, 
 from nltk.tokenize import RegexpTokenizer
 import re
+import zlib
 
 def process_srt(srt, verbose = 0):
     """

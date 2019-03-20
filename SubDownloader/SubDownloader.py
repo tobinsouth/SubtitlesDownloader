@@ -1,7 +1,7 @@
 from imdb import IMDb, IMDbError
 from pythonopensubtitles.opensubtitles import OpenSubtitles
 import os
-
+import pickle
 
 
 class SubDownloader(object):
@@ -303,9 +303,20 @@ class SubDownloader(object):
                 print(obj)
         
                 
-        
-
-        
+    def save_meta_data(self, meta_data_obj, new_data_path = None):
+        """
+        Saves the metadata object of the episodes to file as a pickle.
+        """
+        if new_data_path is not None:
+            self.data_path = new_data_path
+        try:
+            if not os.path.exists(self.data_path):
+                os.makedirs(self.data_path)
+           
+            with open(self.data_path+"meta_object.pickle", "w+") as f:
+                pickle.dump(meta_data_obj, f)
+        except:
+            self.ObjPrint("Somethign went wrong during saving")
         
         
         
