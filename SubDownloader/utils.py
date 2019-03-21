@@ -5,7 +5,7 @@ from nltk.tokenize import RegexpTokenizer
 import re
 import zlib
 
-def process_srt(srt, verbose = 0):
+def process_srt(srt, verbose = 0, runtime = None):
     """
     Takes an SRT file as string input. Returns a single list of words.
     All punctuation, formatting tags and capitalisation is removed.
@@ -46,6 +46,12 @@ def process_srt(srt, verbose = 0):
             line+=1
         else:
             break 
+        
+        if runtime is not None:
+            # break if over runtime
+            if int(lines_list[line+1][3:5]) > runtime:
+                break
+            
     if verbose == 1:
         print("Done on line " + str(line) + " of " + str(N_lines))
     
@@ -161,11 +167,5 @@ def compress_by_token_ratio(list_of_string):
     ratio = len(encoded_string) / len(single_string)
     
     return ratio
-    
-    
-    
-    
-    
-    
     
     
