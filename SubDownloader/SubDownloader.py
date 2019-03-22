@@ -309,11 +309,12 @@ class SubDownloader(object):
         """
         if new_data_path is not None:
             self.data_path = new_data_path
+            
         try:
             if not os.path.exists(self.data_path):
                 os.makedirs(self.data_path)
            
-            with open(self.data_path+"meta_object.pickle", "w+") as f:
+            with open(self.data_path+"meta_object.pickle", "wb+") as f:
                 pickle.dump(meta_data_obj, f)
         except:
             self.ObjPrint("Somethign went wrong during saving")
