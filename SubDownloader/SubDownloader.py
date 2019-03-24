@@ -316,6 +316,7 @@ class SubDownloader(object):
            
             with open(self.data_path+"meta_object.pickle", "wb+") as f:
                 pickle.dump(meta_data_obj, f)
+                print("File has been saved")
         except:
             self.ObjPrint("Somethign went wrong during saving")
         
