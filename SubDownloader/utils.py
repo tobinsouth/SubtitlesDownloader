@@ -18,52 +18,44 @@ def process_srt(srt, verbose = 0, runtime = None):
     N_lines = len(lines_list)
 
     line = 0
-    if lines_list[0][0] == '0':
-        print("Running SRT Processing")
-        while True:
-            line += 2 # skip the number and timestep
-            this_line = lines_list[line]
-            while this_line !=  '':  # Collect all of the subtitle text
-                if 'http://' not in this_line:
-                    cleaned_1 = re.sub('<[^>]*>', '', this_line.lower())  # Remove formatting tags
-                    cleaned_2 = tokenizer.tokenize(cleaned_1)  # Tokenize and remove punc 
-                    wordbag += cleaned_2  # Add to word bag
-    
-                line += 1  # Move to next line
-                if line < N_lines:
-                    this_line = lines_list[line]
-                else:
-                    break
-    
-    
-            while line+2 < N_lines and lines_list[line+1] == '':  # Traverse all blank lines
-                line += 1
-    
-            # Check for end of file
-            if not line+2 < N_lines:
-                break
-    
-            # Check for end of readable text
-            if lines_list[line+1].isdigit() and '-->' in lines_list[line+2]:
-                line+=1
+    while True:
+        line += 2 # skip the number and timestep
+
+        this_line = lines_list[line]
+        while this_line !=  '':  # Collect all of the subtitle text
+            if 'http://' not in this_line and 'www' not in this_line:
+                cleaned_1 = re.sub('<[^>]*>', '', this_line.lower())  # Remove formatting tags
+                cleaned_2 = tokenizer.tokenize(cleaned_1)  # Tokenize and remove punc 
+                wordbag += cleaned_2  # Add to word bag
+
+            line += 1  # Move to next line
+            if line < N_lines:
+                this_line = lines_list[line]
             else:
-                break 
-            if runtime is not None:
-                # break if over runtime
-                if int(lines_list[line+1][3:5]) > runtime:
-                    break
-                
-        if verbose == 1:
-            print("Done on line " + str(line) + " of " + str(N_lines))
-    elif lines_list[0][0] == '{':
-        print("Running Sub Processing")
-        for line in lines_list:
-            if line[0] == '{':
-                if 'http://' not in line:
-                    cleaned_1 = re.sub('<[^>]*>', '', line.lower())  # Remove formatting tags
-                    cleaned_2 = re.sub('{[^>]*}', '', cleaned_1) 
-                    cleaned_3 = tokenizer.tokenize(cleaned_2)  # Tokenize and remove punc 
-                    wordbag += cleaned_3  # Add to word bag
+                break
+
+
+        while line+2 < N_lines and lines_list[line+1] == '':  # Traverse all blank lines
+            line += 1
+
+        # Check for end of file
+        if not line+2 < N_lines:
+            break
+
+        # Check for end of readable text
+        if lines_list[line+1].isdigit() and '-->' in lines_list[line+2]:
+            line+=1
+        else:
+            break 
+        
+        if runtime is not None:
+            # break if over runtime
+            if int(lines_list[line+1][3:5]) > runtime:
+                break
+            
+    if verbose == 1:
+        print("Done on line " + str(line) + " of " + str(N_lines))
+    
     return wordbag
 
 
@@ -176,5 +168,19 @@ def compress_by_token_ratio(list_of_string):
     ratio = len(encoded_string) / len(single_string)
     
     return ratio
+    
+def check_sub_format(long_string):
+    """ Checks for sub formats instead of SRT formats"""
+    if long_string[0] == '{':
+        return False
+    if long_string[0] == '1' or long_string[0] == '0':
+        return True
+    print("Not sure, first line is ", long_string.splitlines()[0])
+    return False
+    
+    
+    
+    
+    
     
     
