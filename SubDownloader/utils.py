@@ -48,7 +48,6 @@ def process_srt(srt, verbose = 0, runtime = None):
                 line+=1
             else:
                 break 
-            print(lines_list[line+1][3:5])
             if runtime is not None:
                 # break if over runtime
                 if int(lines_list[line+1][3:5]) > runtime:
@@ -65,15 +64,6 @@ def process_srt(srt, verbose = 0, runtime = None):
                     cleaned_2 = re.sub('{[^>]*}', '', cleaned_1) 
                     cleaned_3 = tokenizer.tokenize(cleaned_2)  # Tokenize and remove punc 
                     wordbag += cleaned_3  # Add to word bag
-#    
-#            if runtime is not None:
-#                # break if over runtime
-#                
-#                if int(lines_list[line+1][3:5]) > runtime:
-#                    break
-                
-
-    
     return wordbag
 
 
