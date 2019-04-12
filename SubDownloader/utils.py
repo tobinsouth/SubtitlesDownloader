@@ -177,6 +177,20 @@ def check_sub_format(long_string):
         return True
     print("Not sure, first line is ", long_string.splitlines()[0])
     return False
+
+
+def normalised_paired_compression(a_string, b_string):
+    """
+    Returns a noramlised paired compression ratio via the formula:
+        2 * C(A+B) / (C(A) + C(B))
+    """
+
+    C_AB = compress_by_token_ratio(a_string+b_string)
+    C_A = compress_by_token_ratio(a_string)
+    C_B = compress_by_token_ratio(b_string)
+
+    return 2 * C_AB / (C_A+ C_B)
+
     
     
     
