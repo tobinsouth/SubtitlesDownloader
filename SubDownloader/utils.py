@@ -161,13 +161,31 @@ def compress_by_token_ratio(list_of_string):
     
     # Join coded list into single string
     single_string = str(coded_list).encode("utf-8")
+        
+    return _compress(list_of_string) / len(single_string)
+
+def _compress(list_of_string):
+    """
+    Internal Compression Method using zlib compression.
+        :param list_of_string A list of ordered string objects to be compressed.
+
+    """
+    vocab_set = set(list_of_string)
+    code_set = set(list(range(1,len(vocab_set)+1)))
+    
+    # Transforming to integer code 
+    
+    ref = dict(zip(vocab_set, list(range(1,len(vocab_set)+1))))
+    
+    coded_list = [ref[tok] for tok in list_of_string]
+    
+    # Join coded list into single string
+    single_string = str(coded_list).encode("utf-8")
     
     # Use zlib to compress
     encoded_string = zlib.compress(single_string)
     
-    ratio = len(encoded_string) / len(single_string)
-    
-    return ratio
+    return len(encoded_string) 
     
 def check_sub_format(long_string):
     """ Checks for sub formats instead of SRT formats"""
@@ -185,9 +203,9 @@ def normalised_paired_compression(a_string, b_string):
         2 * C(A+B) / (C(A) + C(B))
     """
 
-    C_AB = compress_by_token_ratio(a_string+b_string)
-    C_A = compress_by_token_ratio(a_string)
-    C_B = compress_by_token_ratio(b_string)
+    C_AB = _compress(a_string+b_string)
+    C_A = _compress(a_string)
+    C_B = _compress(b_string)
 
     return 2 * C_AB / (C_A+ C_B)
 
