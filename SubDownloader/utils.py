@@ -207,7 +207,7 @@ def normalised_paired_compression(a_string, b_string):
     C_A = _compress(a_string)
     C_B = _compress(b_string)
 
-    return 2 * C_AB / (C_A+ C_B)
+    return C_AB / (C_A+ C_B)
 
     
     
