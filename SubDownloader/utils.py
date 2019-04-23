@@ -186,6 +186,45 @@ def _compress(list_of_string):
     encoded_string = zlib.compress(single_string)
     
     return len(encoded_string) 
+
+def _hhat(list_of_string):
+    """ Non parametric entropy estimator for a single random process. """
+
+    word_set = set(string_list)
+
+    ref = dict(zip(word_set, list(range(len(word_set)))))
+
+    data = [ref[w] for w in string_list]
+    
+    N = len(data)
+    
+    vocab_set = set(data)
+        
+    # Making Data structure
+    
+    lookup_table = dict((e,[]) for e in vocab_set)
+    
+    Lambdas = [1]
+    
+    for i in range(1,N):
+        
+        # Add previous to lookup
+        lookup_table[data[i-1]]+=[i-1]
+        
+        
+        # Search for lambda_i
+        subset_length = 1
+        
+        valid_targets = lookup_table[data[i]]
+        while len(valid_targets) > 0 and i+subset_length < N:
+            # Take every valid target, check if next word is valid, make new target set
+            valid_targets = [t+1 for t in valid_targets if t+1 in lookup_table[data[i+subset_length]]]
+            subset_length += 1
+        
+        Lambdas += [subset_length]
+
+    return N*math.log(N,2)/sum(Lambdas)
+
     
 def check_sub_format(long_string):
     """ Checks for sub formats instead of SRT formats"""
@@ -197,17 +236,29 @@ def check_sub_format(long_string):
     return False
 
 
-def normalised_paired_compression(a_string, b_string):
+def normalised_paired_compression(a_string, b_string, method = 'compression'):
     """
     Returns a noramlised paired compression ratio via the formula:
         2 * C(A+B) / (C(A) + C(B))
     """
+    if method == 'compression':
+        C_AB = _compress(a_string+b_string)
+        C_A = _compress(a_string)
+        C_B = _compress(b_string)
 
-    C_AB = _compress(a_string+b_string)
-    C_A = _compress(a_string)
-    C_B = _compress(b_string)
+        return C_AB / (C_A+ C_B)
 
-    return C_AB / (C_A+ C_B)
+    elif method == 'entropy':
+        C_AB = _hhat(a_string+b_string)
+        C_A = _hhat(a_string)
+        C_B = _hhat(b_string)
+
+        return C_AB / (C_A+ C_B)
+
+    else:
+        raise Exception("Not a valid method")
+
+
 
     
     
