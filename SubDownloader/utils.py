@@ -4,6 +4,7 @@
 from nltk.tokenize import RegexpTokenizer
 import re
 import zlib
+import math
 
 def process_srt(srt, verbose = 0, runtime = None):
     """
