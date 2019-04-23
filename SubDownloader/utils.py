@@ -190,11 +190,11 @@ def _compress(list_of_string):
 def _hhat(list_of_string):
     """ Non parametric entropy estimator for a single random process. """
 
-    word_set = set(string_list)
+    word_set = set(list_of_string)
 
     ref = dict(zip(word_set, list(range(len(word_set)))))
 
-    data = [ref[w] for w in string_list]
+    data = [ref[w] for w in list_of_string]
     
     N = len(data)
     
