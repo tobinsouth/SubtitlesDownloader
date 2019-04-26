@@ -188,43 +188,66 @@ def _compress(list_of_string):
     
     return len(encoded_string) 
 
-def _hhat(list_of_string):
+def _hhat(list_of_string, method = 'lewisbagrow'):
     """ Non parametric entropy estimator for a single random process. """
 
-    word_set = set(list_of_string)
+    if method =='fastlookup':
+        word_set = set(list_of_string)
 
-    ref = dict(zip(word_set, list(range(len(word_set)))))
+        ref = dict(zip(word_set, list(range(len(word_set)))))
 
-    data = [ref[w] for w in list_of_string]
-    
-    N = len(data)
-    
-    vocab_set = set(data)
+        data = [ref[w] for w in list_of_string]
         
-    # Making Data structure
-    
-    lookup_table = dict((e,[]) for e in vocab_set)
-    
-    Lambdas = [1]
-    
-    for i in range(1,N):
+        N = len(data)
         
-        # Add previous to lookup
-        lookup_table[data[i-1]]+=[i-1]
+        vocab_set = set(data)
+            
+        # Making Data structure
         
+        lookup_table = dict((e,[]) for e in vocab_set)
         
-        # Search for lambda_i
-        subset_length = 1
+        Lambdas = [1]
         
-        valid_targets = lookup_table[data[i]]
-        while len(valid_targets) > 0 and i+subset_length < N:
-            # Take every valid target, check if next word is valid, make new target set
-            valid_targets = [t+1 for t in valid_targets if t+1 in lookup_table[data[i+subset_length]]]
-            subset_length += 1
-        
-        Lambdas += [subset_length]
+        for i in range(1,N):
+            
+            # Add previous to lookup
+            lookup_table[data[i-1]]+=[i-1]
+            
+            
+            # Search for lambda_i
+            subset_length = 1
+            
+            valid_targets = lookup_table[data[i]]
+            while len(valid_targets) > 0 and i+subset_length < N:
+                # Take every valid target, check if next word is valid, make new target set
+                valid_targets = [t+1 for t in valid_targets if t+1 in lookup_table[data[i+subset_length]]]
+                subset_length += 1
+            
+            Lambdas += [subset_length]
 
-    return N*math.log(N,2)/sum(Lambdas)
+        return N*math.log(N,2)/sum(Lambdas)
+    elif method == 'lewisbagrow':
+
+        word_set = set(list_of_string)
+
+        ref = dict(zip(word_set, list(range(len(word_set)))))
+
+        data = [ref[w] for w in list_of_string]
+        
+        N = len(data)
+        Lambdas = 0
+        pre_string = "  "  # Create a string containing the previous words
+        for i in range(N):  
+            count = 0
+            string_in = True 
+            while string_in and i+count<N: # Loop through each possible subsequence until break
+                count+=1
+                string_in = "  ".join([str(i) for i in data[i:i+count]]) in pre_string  # Use 'in' to check
+            Lambdas += count
+            pre_string += "%s  " % data[i]  # Append to previous words varible
+        return N*math.log(N,2)/Lambdas
+
+
 
     
 def check_sub_format(long_string):
@@ -258,11 +281,6 @@ def normalised_paired_compression(a_string, b_string, method = 'compression'):
 
     else:
         raise Exception("Not a valid method")
-
-
-
-    
-    
     
     
     
