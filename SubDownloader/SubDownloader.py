@@ -199,9 +199,16 @@ class SubDownloader(object):
         # If the end is reached without finding anything
         raise Exception('Could not find any shows that matched the parameters.')
                 
-            
+    def find_from_id_tv_show(self, imdb_id):
+        """ Finds the IMDB Object based on a give IMDB ID """
+        try:
+            result = self.ia.get_movie(imdb_id)
+            self.ia.update(result, 'episodes')
+        except IMDbError as e:
+            print("Something went wrong getting the episodes, process aborted.")
+            raise e  
 
-        
+        return result
         
         
         
