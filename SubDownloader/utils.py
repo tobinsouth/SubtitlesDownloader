@@ -93,8 +93,12 @@ def get_episode_metas(series_obj):
 
     for season, episodes in series_obj['episodes'].items():
         for episode, movie_obj in episodes.items():
-            epsiode_data = {"season":season, "episode": episode, "imdb_id":movie_obj.movieID, 
+            try:
+                epsiode_data = {"season":season, "episode": episode, "imdb_id":movie_obj.movieID, 
                             'title':movie_obj.data['title'], "air_date": movie_obj.data['original air date']}
+            except KeyError:
+                epsiode_data = {"season":season, "episode": episode, "imdb_id":movie_obj.movieID, 
+                            'title':movie_obj.data['title']}
             all_episodes.append(epsiode_data)
             
     print("Returning", len(all_episodes), " epsiodes.")
