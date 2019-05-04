@@ -258,27 +258,21 @@ class SubDownloader(object):
                 srt_dict = self.ost.download_subtitles(mini_list, return_decoded_data=True)
 
                 # Check that the download worked
-                if srt_dict is None:
+   
+                 while srt_dict is None:
                     print("OpenSubtitles returned nothing, possibly due to rate limit",
                           "Attempting to login via a new user")
                     
-                    while srt_dict is None:
+                    fix_result = self.rate_limit_naughty_fix()
+                    
+                    if fix_result == -1:
+                        raise Exception("Account Access Failed")
 
-                        fix_result = self.rate_limit_naughty_fix()
-                        
-                        if fix_result == -1:
-                            raise Exception("Account Access Failed")
-
-                        srt_dict = self.ost.download_subtitles(mini_list, return_decoded_data=True)
+                    srt_dict = self.ost.download_subtitles(mini_list, return_decoded_data=True)
 
 
-                    for id_ in mini_list:           
-                        all_subtitles[id_]= srt_dict[id_]
-                
-                # Otherwise carry on
-                else:
-                    for id_ in mini_list:           
-                        all_subtitles[id_]= srt_dict[id_]
+                for id_ in mini_list:           
+                    all_subtitles[id_]= srt_dict[id_]
                 
                 self.ObjPrint(["Downloaded SRT for all", mini_list])
                 
