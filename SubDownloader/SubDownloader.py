@@ -91,13 +91,13 @@ class SubDownloader(object):
                   "This suggests all accounts have been used.",
                   "Try running rate_limit_clean to address issue.",
                   "Meanwhile, first user has been used."], important = True)
-            
+
         usr, pwd = self.password_array[0]
         token = self.ost.login(usr, pwd)
         # Save current account 
         self.current_account = usr
         self.used_accounts.append(usr)
-        return token
+        return -1
         
     def get_current_login(self):
         """ Returns current login username """
@@ -115,7 +115,7 @@ class SubDownloader(object):
         """
         Avoids the rate limit by logining in with a different account.
         """
-        self.login()
+       return self.login()
         
     def remove_usr(self, username):
         """
@@ -262,15 +262,18 @@ class SubDownloader(object):
                     print("OpenSubtitles returned nothing, possibly due to rate limit",
                           "Attempting to login via a new user")
                     
-                    self.rate_limit_naughty_fix()
-                    
-                    srt_dict = self.ost.download_subtitles(mini_list, return_decoded_data=True)
-                    
-                    if srt_dict is None:
-                        print("Unable to download the episodes: ",mini_list)
-                    else:
-                        for id_ in mini_list:           
-                            all_subtitles[id_]= srt_dict[id_]
+                    while srt_dict is None:
+
+                        fix_result = self.rate_limit_naughty_fix()
+                        
+                        if fix_result == -1:
+                            raise Exception("Account Access Failed")
+
+                        srt_dict = self.ost.download_subtitles(mini_list, return_decoded_data=True)
+
+
+                    for id_ in mini_list:           
+                        all_subtitles[id_]= srt_dict[id_]
                 
                 # Otherwise carry on
                 else:
