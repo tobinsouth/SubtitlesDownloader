@@ -259,10 +259,10 @@ class SubDownloader(object):
 
                 # Check that the download worked
    
-                 while srt_dict is None:
+                while srt_dict is None:
                     print("OpenSubtitles returned nothing, possibly due to rate limit",
                           "Attempting to login via a new user")
-                    
+
                     fix_result = self.rate_limit_naughty_fix()
                     
                     if fix_result == -1:
