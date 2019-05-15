@@ -17,59 +17,85 @@ def process_srt(srt, verbose = 0, runtime = None):
     lines_list = srt.splitlines()
 
     N_lines = len(lines_list)
-    if srt[0] == '1':
-        line = 0
-        while True:
-            line += 2 # skip the number and timestep
+    try:
+        #Get first number if exists
+        srt_check = False
+        try:
+            fnum = int(srt[0])
+            if fnum < 10:
+                srt_check = True
+        except ValueError:
+            try:
+                fnum = int(srt[:2])
+                if fnum < 10:
+                    srt_check = True
+            except ValueError:
+                srt_check = False
+                try:
+                    nobyte = srt[:10].replace("\ufeff","")
+                    fnum = int(nobyte[:2])
+                    if fnum < 10:
+                        srt_check = True
+                except:
+                    srt_check = False
+        if srt_check:
+            line = 0
+            while True:
+                line += 2 # skip the number and timestep
 
-            this_line = lines_list[line]
-            while this_line !=  '':  # Collect all of the subtitle text
-                if 'http://' not in this_line and 'www' not in this_line:
-                    cleaned_1 = re.sub('<[^>]*>', '', this_line.lower())  # Remove formatting tags
-                    cleaned_2 = tokenizer.tokenize(cleaned_1)  # Tokenize and remove punc 
-                    wordbag += cleaned_2  # Add to word bag
+                this_line = lines_list[line]
+                while this_line !=  '':  # Collect all of the subtitle text
+                    if 'http://' not in this_line and 'www' not in this_line:
+                        cleaned_1 = re.sub('<[^>]*>', '', this_line.lower())  # Remove formatting tags
+                        cleaned_2 = tokenizer.tokenize(cleaned_1)  # Tokenize and remove punc 
+                        wordbag += cleaned_2  # Add to word bag
 
-                line += 1  # Move to next line
-                if line < N_lines:
-                    this_line = lines_list[line]
+                    line += 1  # Move to next line
+                    if line < N_lines:
+                        this_line = lines_list[line]
+                    else:
+                        break
+
+
+                while line+2 < N_lines and lines_list[line+1] == '':  # Traverse all blank lines
+                    line += 1
+
+                # Check for end of file
+                if not line+2 < N_lines:
+                    break
+
+                # Check for end of readable text
+                if lines_list[line+1].isdigit() and '-->' in lines_list[line+2]:
+                    line+=1
                 else:
-                    break
+                    break 
 
+                if runtime is not None:
+                    # break if over runtime
+                    if int(lines_list[line+1][3:5]) > runtime:
+                        break
 
-            while line+2 < N_lines and lines_list[line+1] == '':  # Traverse all blank lines
-                line += 1
+            if verbose == 1:
+                print("Done on line " + str(line) + " of " + str(N_lines))
 
-            # Check for end of file
-            if not line+2 < N_lines:
-                break
+            return wordbag
+        elif srt[0]=='{':
+            line = 0
+            for line in lines_list:
+                text = re.search(r'\{\d+\}\{\d+\}(.*)', line).group(1)
+                text = text.replace("|"," ")
+                text = text.replace("-"," ").lower()
+                text = tokenizer.tokenize(text)
+                wordbag+=text
 
-            # Check for end of readable text
-            if lines_list[line+1].isdigit() and '-->' in lines_list[line+2]:
-                line+=1
-            else:
-                break 
-
-            if runtime is not None:
-                # break if over runtime
-                if int(lines_list[line+1][3:5]) > runtime:
-                    break
-
-        if verbose == 1:
-            print("Done on line " + str(line) + " of " + str(N_lines))
-
-        return wordbag
-    elif srt[0]=='{':
-        line = 0
-        for line in lines_list:
-            text = re.search(r'\{\d+\}\{\d+\}(.*)', line).group(1)
-            text = text.replace("|"," ")
-            text = text.replace("-"," ").lower()
-            text = tokenizer.tokenize(text)
-            wordbag+=text
-
-        return wordbag
-    else:
-        print("Not SRT Format -  This will create later issues.")
+            return wordbag
+        else:
+            print("Not SRT Format -  This will create later issues.")
+            # print("File looks like,", srt[0:10])
+            raise ValueError
+    except Exception as e:
+            print(e)
+            raise ValueError
         
 
 
