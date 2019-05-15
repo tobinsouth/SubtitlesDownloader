@@ -17,47 +17,60 @@ def process_srt(srt, verbose = 0, runtime = None):
     lines_list = srt.splitlines()
 
     N_lines = len(lines_list)
+    if srt[0] == '1':
+        line = 0
+        while True:
+            line += 2 # skip the number and timestep
 
-    line = 0
-    while True:
-        line += 2 # skip the number and timestep
+            this_line = lines_list[line]
+            while this_line !=  '':  # Collect all of the subtitle text
+                if 'http://' not in this_line and 'www' not in this_line:
+                    cleaned_1 = re.sub('<[^>]*>', '', this_line.lower())  # Remove formatting tags
+                    cleaned_2 = tokenizer.tokenize(cleaned_1)  # Tokenize and remove punc 
+                    wordbag += cleaned_2  # Add to word bag
 
-        this_line = lines_list[line]
-        while this_line !=  '':  # Collect all of the subtitle text
-            if 'http://' not in this_line and 'www' not in this_line:
-                cleaned_1 = re.sub('<[^>]*>', '', this_line.lower())  # Remove formatting tags
-                cleaned_2 = tokenizer.tokenize(cleaned_1)  # Tokenize and remove punc 
-                wordbag += cleaned_2  # Add to word bag
+                line += 1  # Move to next line
+                if line < N_lines:
+                    this_line = lines_list[line]
+                else:
+                    break
 
-            line += 1  # Move to next line
-            if line < N_lines:
-                this_line = lines_list[line]
+
+            while line+2 < N_lines and lines_list[line+1] == '':  # Traverse all blank lines
+                line += 1
+
+            # Check for end of file
+            if not line+2 < N_lines:
+                break
+
+            # Check for end of readable text
+            if lines_list[line+1].isdigit() and '-->' in lines_list[line+2]:
+                line+=1
             else:
-                break
+                break 
 
+            if runtime is not None:
+                # break if over runtime
+                if int(lines_list[line+1][3:5]) > runtime:
+                    break
 
-        while line+2 < N_lines and lines_list[line+1] == '':  # Traverse all blank lines
-            line += 1
+        if verbose == 1:
+            print("Done on line " + str(line) + " of " + str(N_lines))
 
-        # Check for end of file
-        if not line+2 < N_lines:
-            break
+        return wordbag
+    elif srt[0]=='{':
+        line = 0
+        for line in line_list:
+            text = re.search(r'\{\d+\}\{\d+\}(.*)', line).group(1)
+            text = text.replace("|"," ")
+            text = text.replace("-"," ").lower()
+            text = tokenizer.tokenize(text)
+            wordbag+=text
 
-        # Check for end of readable text
-        if lines_list[line+1].isdigit() and '-->' in lines_list[line+2]:
-            line+=1
-        else:
-            break 
+        return wordbag
+    else:
+        print("Not SRT Format -  This will create later issues.")
         
-        if runtime is not None:
-            # break if over runtime
-            if int(lines_list[line+1][3:5]) > runtime:
-                break
-            
-    if verbose == 1:
-        print("Done on line " + str(line) + " of " + str(N_lines))
-    
-    return wordbag
 
 
 def get_epsiode_ids(episode_metas):
