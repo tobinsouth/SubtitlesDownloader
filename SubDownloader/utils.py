@@ -60,7 +60,7 @@ def process_srt(srt, verbose = 0, runtime = None):
         return wordbag
     elif srt[0]=='{':
         line = 0
-        for line in line_list:
+        for line in lines_list:
             text = re.search(r'\{\d+\}\{\d+\}(.*)', line).group(1)
             text = text.replace("|"," ")
             text = text.replace("-"," ").lower()
