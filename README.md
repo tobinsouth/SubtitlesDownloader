@@ -49,5 +49,5 @@ Subtitle Downloader has two main dependencies:
 ## Installation
 
 ```
-pip install -e git+https://github.com/tmsouth/SubtitlesDownloader#egg=SubtitlesDownloader
+pip install -e git+https://github.com/tobinsouth/SubtitlesDownloader#egg=SubtitlesDownloader
 ```
